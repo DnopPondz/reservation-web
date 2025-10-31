@@ -10,8 +10,10 @@ const paymentMethods = [
 
 export function ReservationForm({ onSubmit }) {
   const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkInTime, setCheckInTime] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState("");
   const [payment, setPayment] = useState(paymentMethods[0]?.id ?? "qr");
   const [slipPreview, setSlipPreview] = useState(null);
   const [note, setNote] = useState("");
@@ -36,10 +38,39 @@ export function ReservationForm({ onSubmit }) {
     setMessage(null);
 
     try {
-      await onSubmit?.({ serviceId, date, time, paymentMethod: payment, note });
-      setMessage({ type: "success", text: "Reservation submitted successfully!" });
-      setDate("");
-      setTime("");
+      if (!checkInDate || !checkInTime || !checkOutDate || !checkOutTime) {
+        throw new Error("กรุณาเลือกวันและเวลาเข้า-ออกให้ครบถ้วน");
+      }
+
+      const checkInDateTime = new Date(`${checkInDate}T${checkInTime}`);
+      const checkOutDateTime = new Date(`${checkOutDate}T${checkOutTime}`);
+
+      if (Number.isNaN(checkInDateTime.getTime()) || Number.isNaN(checkOutDateTime.getTime())) {
+        throw new Error("รูปแบบวันที่หรือเวลาไม่ถูกต้อง");
+      }
+
+      if (checkOutDateTime <= checkInDateTime) {
+        throw new Error("เวลาเช็คเอาต์ต้องหลังเวลาเช็คอิน");
+      }
+
+      await onSubmit?.({
+        serviceId,
+        checkInDate,
+        checkInTime,
+        checkOutDate,
+        checkOutTime,
+        paymentMethod: payment,
+        note,
+        paymentSlip: slipPreview,
+      });
+      setMessage({
+        type: "success",
+        text: "จองสำเร็จ! ตรวจสอบสถานะได้ที่ปฏิทินของผู้ดูแล",
+      });
+      setCheckInDate("");
+      setCheckInTime("");
+      setCheckOutDate("");
+      setCheckOutTime("");
       setNote("");
       setSlipPreview(null);
     } catch (error) {
@@ -71,7 +102,7 @@ export function ReservationForm({ onSubmit }) {
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
           Service / Room
           <select
             value={serviceId}
@@ -86,26 +117,46 @@ export function ReservationForm({ onSubmit }) {
           </select>
         </label>
         <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-          Date
+          Check-in date
           <input
             type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
+            value={checkInDate}
+            onChange={(event) => setCheckInDate(event.target.value)}
             required
             className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
           />
         </label>
         <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-          Time
+          Check-in time
           <input
             type="time"
-            value={time}
-            onChange={(event) => setTime(event.target.value)}
+            value={checkInTime}
+            onChange={(event) => setCheckInTime(event.target.value)}
             required
             className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
           />
         </label>
-        <div className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+        <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+          Check-out date
+          <input
+            type="date"
+            value={checkOutDate}
+            onChange={(event) => setCheckOutDate(event.target.value)}
+            required
+            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+          Check-out time
+          <input
+            type="time"
+            value={checkOutTime}
+            onChange={(event) => setCheckOutTime(event.target.value)}
+            required
+            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+          />
+        </label>
+        <div className="flex flex-col gap-2 text-sm font-medium text-slate-700 dark:text-slate-200 md:col-span-2">
           Payment method
           <div className="grid gap-3 md:grid-cols-2">
             {paymentMethods.map((method) => (

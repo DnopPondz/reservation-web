@@ -1,17 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { BookingCalendar } from "@/components/admin/BookingCalendar";
-import { adminBookings } from "@/data/admin";
+import { useBookings } from "@/store/booking-context";
 
 export function AdminBookingsClient() {
-  const [records] = useState(adminBookings);
+  const { bookings } = useBookings();
   const sortedRecords = useMemo(
     () =>
-      [...records].sort(
+      [...bookings].sort(
         (a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()
       ),
-    [records]
+    [bookings]
   );
 
   return <BookingCalendar bookings={sortedRecords} />;

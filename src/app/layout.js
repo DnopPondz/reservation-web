@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/store/auth-context";
+import { BookingProvider } from "@/store/booking-context";
 
 export const metadata = {
   title: {
@@ -18,11 +19,13 @@ export default function RootLayout({ children }) {
     <html lang="en" className="bg-slate-50 text-slate-900">
       <body className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1 bg-slate-50 pb-20 pt-10 dark:bg-slate-950">{children}</main>
-            <Footer />
-          </div>
+          <BookingProvider>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1 bg-slate-50 pb-20 pt-10 dark:bg-slate-950">{children}</main>
+              <Footer />
+            </div>
+          </BookingProvider>
         </AuthProvider>
       </body>
     </html>
